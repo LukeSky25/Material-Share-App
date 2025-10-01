@@ -26,8 +26,6 @@ const AppHeader = () => (
     <View style={styles.header}>
         <Text style={styles.headerTitle}>Material Share</Text>
         <View style={styles.navLinks}>
-            {/* Removemos os textos estáticos "Início", "Serviços", "Sobre" */}
-            <MaterialCommunityIcons name="at" size={20} color="#FFF" style={{ marginLeft: 8 }} />
         </View>
     </View>
 );

@@ -1,15 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-  SafeAreaView,
-  ScrollView,
-  Image,
-  FlatList, // Ideal para renderizar listas grandes de forma eficiente
+    View,
+    Text,
+    StyleSheet,
+    Dimensions,
+    SafeAreaView,
+    ScrollView,
+    TouchableOpacity, // <--- Importante: Adicionado TouchableOpacity
 } from 'react-native';
 // Importando ícones
 import { Feather, MaterialCommunityIcons, AntDesign } from '@expo/vector-icons'; 
@@ -22,120 +19,129 @@ const DARK_BLUE = '#2c65a0';
 const LIGHT_GRAY = '#f7f9fb';
 const CARD_SHADOW = '#000';
 
-// Dados simulados de materiais
-const MOCK_MATERIALS = [
-    { id: '1', name: 'Bloco de Concreto Estrutural', price: 'R$ 3,50 / un.', location: 'São Paulo - SP', image: 'https://placehold.co/100x100/eeeeee/3478bf?text=BLOCO', category: 'Alvenaria' },
-    { id: '2', name: 'Saco de Cimento CP V 50kg', price: 'R$ 32,90 / un.', location: 'Rio de Janeiro - RJ', image: 'https://placehold.co/100x100/eeeeee/3478bf?text=CIMENTO', category: 'Argamassa' },
-    { id: '3', name: 'Telha Cerâmica Romana', price: 'R$ 1,99 / un.', location: 'Belo Horizonte - MG', image: 'https://placehold.co/100x100/eeeeee/3478bf?text=TELHA', category: 'Cobertura' },
-    { id: '4', name: 'Barra de Aço CA-50 10mm', price: 'R$ 45,00 / un.', location: 'Curitiba - PR', image: 'https://placehold.co/100x100/eeeeee/3478bf?text=AÇO', category: 'Estrutura' },
-    { id: '5', name: 'Placa de Gesso Acartonado', price: 'R$ 28,00 / un.', location: 'Porto Alegre - RS', image: 'https://placehold.co/100x100/eeeeee/3478bf?text=GESSO', category: 'Acabamento' },
-    { id: '6', name: 'Piso Porcelanato 60x60', price: 'R$ 65,00 / m²', location: 'Salvador - BA', image: 'https://placehold.co/100x100/eeeeee/3478bf?text=PISO', category: 'Revestimento' },
+// Dados dos Serviços
+const SERVICES_DATA = [
+    {
+        id: '1',
+        icon: 'message-circle', // Ícone de megafone para Captação e Divulgação
+        title: 'Captação e Divulgação',
+        description: 'Identificamos e cadastramos doadores (pessoas físicas e empresas) que possuem materiais de construção excedentes ou sem uso, como sobras de obras, itens de mostruário ou estoque parado.',
+    },
+    {
+        id: '2',
+        // ATENÇÃO: 'handshake' não é do Feather, mas vamos manter o nome.
+        // Se der interrogação, troque para um Feather (ex: 'link-2').
+        icon: 'link', 
+        title: 'A Ponte Solidária (Intermediação)',
+        description: 'Nosso trabalho é fazer a conexão. Analisamos as doações disponíveis e as cruzamos com as solicitações de beneficiários previamente cadastrados e verificados, como famílias de baixa renda e outras ONGs.',
+    },
+    {
+        id: '3',
+        icon: 'truck', 
+        title: 'Destinação e Logística',
+        description: 'Auxiliamos na coordenação da retirada e entrega dos materiais, buscando a solução mais viável para que os itens cheguem ao seu destino final e promovam a transformação necessária.',
+    },
+    {
+        id: '4',
+        icon: 'home', 
+        title: 'Conexão com o Beneficiário',
+        description: 'Facilitamos o contato e a logística para que o material certo chegue a quem realmente precisa, transformando o que seria descartado em lares mais seguros e sonhos realizados.',
+    },
 ];
 
-// Componente de Navegação Superior (Barra de título)
-const AppHeader = () => (
+// Componente de um link de navegação com ícone
+// Mantenho esta função mesmo sem uso, caso você queira reativar os links.
+const NavLink = ({ iconName, label, isCurrent }) => (
+    <View style={headerStyles.navLinkContainer}>
+        <Feather 
+            name={iconName} 
+            size={18} 
+            color={isCurrent ? '#FFF' : '#b2e2ff'} 
+        />
+        <Text style={[
+            headerStyles.navText, 
+            isCurrent && headerStyles.navTextActive 
+        ]}>
+            {label}
+        </Text>
+    </View>
+);
+
+// CORREÇÃO AQUI: AppHeader AGORA RECEBE A PROPRIEDADE 'navigation'
+const AppHeader = ({ navigation }) => (
     <View style={headerStyles.header}>
         <Text style={headerStyles.headerTitle}>Material Share</Text>
-        <Text style={headerStyles.headerTitle}>Usuário</Text>
         
-        {/* Removemos os textos estáticos "Início", "Serviços", "Sobre" */}
-        <View style={headerStyles.navLinks}>
-            <MaterialCommunityIcons name="at" size={20} color="#FFF" style={{ marginLeft: 8 }} />
-        </View>
-    </View>
-);
-
-// Componente para renderizar um item na lista
-const MaterialCard = ({ item }) => (
-    <View style={homeStyles.card}>
-        {/* Imagem Placeholder do Material */}
-        <Image 
-            source={{ uri: item.image }} 
-            style={homeStyles.cardImage} 
-        />
-        <View style={homeStyles.cardDetails}>
-            <Text style={homeStyles.cardName} numberOfLines={2}>{item.name}</Text>
-            <Text style={homeStyles.cardPrice}>{item.price}</Text>
-            
-            {/* Localização */}
-            <View style={homeStyles.cardFooter}>
-                <Feather name="map-pin" size={14} color="#7f8c8d" />
-                <Text style={homeStyles.cardLocation}>{item.location}</Text>
-            </View>
-            
-            {/* Categoria */}
-            <Text style={homeStyles.cardCategory}>Categoria: {item.category}</Text>
-        </View>
-        
-        {/* Botão de Ver Detalhes */}
-        <TouchableOpacity style={homeStyles.viewButton} activeOpacity={0.8}>
-            <AntDesign name="arrowright" size={20} color="#FFF" />
+        {/* CORREÇÃO AQUI: Ícone de Usuário AGORA ENVOLVIDO EM TouchableOpacity */}
+        <TouchableOpacity 
+            onPress={() => navigation.navigate('Usuario')} // <--- Ação de navegação
+            style={headerStyles.userIconContainer} // Estilo opcional para expandir a área de toque
+        >
+            <Feather name="user" size={30} color="#FFF" />
         </TouchableOpacity>
+
     </View>
 );
 
 
-export default function HomeScreen({ navigation }) {
-    const [searchText, setSearchText] = useState('');
-    
-    // Filtra materiais com base no texto de busca
-    const filteredMaterials = MOCK_MATERIALS.filter(material => 
-        material.name.toLowerCase().includes(searchText.toLowerCase()) ||
-        material.location.toLowerCase().includes(searchText.toLowerCase()) ||
-        material.category.toLowerCase().includes(searchText.toLowerCase())
-    );
+// Componente para renderizar o Card de Serviço
+const ServiceCard = ({ item }) => (
+    <View style={aboutStyles.serviceCard}>
+        {/* Nota: Se o Card 2 ('handshake') der problema, troque o Feather
+           para o MaterialCommunityIcons, ou mude para um ícone Feather
+           (ex: 'link-2') */}
+        <Feather 
+            name={item.icon} 
+            size={36} 
+            color={PRIMARY_BLUE} 
+            style={aboutStyles.serviceIcon} 
+        />
+        <Text style={aboutStyles.cardTitle}>{item.title}</Text>
+        <Text style={aboutStyles.cardDescription}>{item.description}</Text>
+    </View>
+);
 
+
+export default function AboutScreen({ navigation }) {
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: LIGHT_GRAY }}>
-            <AppHeader />
+            {/* CORREÇÃO AQUI: PASSANDO 'navigation' para o AppHeader */}
+            <AppHeader navigation={navigation} /> 
             
-            {/* Barra de Pesquisa e Filtro */}
-            <View style={homeStyles.searchContainer}>
-                <View style={homeStyles.searchInputWrapper}>
-                    <Feather name="search" size={20} color="#7f8c8d" style={homeStyles.searchIcon} />
-                    <TextInput
-                        style={homeStyles.searchInput}
-                        placeholder="Buscar materiais, cidades ou categorias..."
-                        placeholderTextColor="#999"
-                        value={searchText}
-                        onChangeText={setSearchText}
-                        cursorColor={PRIMARY_BLUE}
-                    />
+            <ScrollView contentContainerStyle={aboutStyles.scrollContainer}>
+                
+                {/* Título Principal */}
+                <Text style={aboutStyles.mainTitle}>Nossos Serviços</Text>
+                
+                {/* História/Missão do Site */}
+                <Text style={aboutStyles.missionText}>
+                    Na Material Share, nosso principal serviço é atuar como uma ponte. Conectamos a generosidade de quem doa com a necessidade de quem constrói, garantindo que os materiais de construção encontrem seu destino certo.
+                </Text>
+                
+                {/* Renderização dos Cards de Serviço */}
+                <View style={aboutStyles.servicesContainer}>
+                    {SERVICES_DATA.map(service => (
+                        <ServiceCard key={service.id} item={service} />
+                    ))}
                 </View>
-
-                {/* Botão de Filtro (Simulado) */}
-                <TouchableOpacity style={homeStyles.filterButton} activeOpacity={0.8}>
-                    <Feather name="sliders" size={24} color="#FFF" />
-                </TouchableOpacity>
-            </View>
-
-            {/* Lista de Materiais usando FlatList para melhor performance */}
-            <FlatList
-                data={filteredMaterials}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item }) => <MaterialCard item={item} />}
-                contentContainerStyle={homeStyles.listContent}
-                ListHeaderComponent={() => (
-                    <Text style={homeStyles.sectionTitle}>
-                        Materiais Disponíveis ({filteredMaterials.length})
-                    </Text>
-                )}
-                ListEmptyComponent={() => (
-                    <Text style={homeStyles.emptyText}>Nenhum material encontrado para sua busca.</Text>
-                )}
-            />
-            
+                
+                {/* Rodapé que você viu no design */}
+                <View style={aboutStyles.footerContainer}>
+                    <Text style={aboutStyles.footerText}>© 2025 Material Share</Text>
+                </View>
+                
+            </ScrollView>
         </SafeAreaView>
     );
 }
 
-// Estilos do Header (Replicados para consistência)
+// Estilos do Header
 const headerStyles = StyleSheet.create({
     header: {
         width: '100%',
         backgroundColor: PRIMARY_BLUE,
         paddingHorizontal: 15,
-        paddingVertical: 15,
+        paddingVertical: 12,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -151,139 +157,107 @@ const headerStyles = StyleSheet.create({
         color: '#FFF',
         letterSpacing: 0.5,
     },
+    // Estilo opcional para o TouchableOpacity
+    userIconContainer: {
+        padding: 5,
+    },
     navLinks: {
         flexDirection: 'row',
         alignItems: 'center',
-        // removemos o espaço que os textos estáticos ocupavam
+        flex: 1, 
+        justifyContent: 'center', 
+        marginHorizontal: 10,
+    },
+    navLinkContainer: {
+        flexDirection: 'column', 
+        alignItems: 'center',
+        marginHorizontal: 10,
     },
     navText: {
-        color: '#FFF',
-        fontSize: 14,
-        marginHorizontal: 8,
-    },
-});
-
-// Estilos específicos da Home
-const homeStyles = StyleSheet.create({
-    // --- Área de Busca ---
-    searchContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 15,
-        paddingBottom: 10,
-        backgroundColor: LIGHT_GRAY,
-    },
-    searchInputWrapper: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#FFF',
-        borderRadius: 8,
-        paddingHorizontal: 15,
-        marginRight: 10,
-        height: 48,
-        shadowColor: CARD_SHADOW,
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 2,
-    },
-    searchIcon: {
-        marginRight: 10,
-    },
-    searchInput: {
-        flex: 1,
-        fontSize: 16,
-    },
-    filterButton: {
-        backgroundColor: DARK_BLUE,
-        padding: 12,
-        borderRadius: 8,
-        shadowColor: DARK_BLUE,
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-
-    // --- Lista e Título da Seção ---
-    listContent: {
-        paddingHorizontal: 15,
-        paddingBottom: 20,
-    },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#333',
-        marginTop: 10,
-        marginBottom: 15,
-    },
-    emptyText: {
-        textAlign: 'center',
-        color: '#7f8c8d',
-        marginTop: 50,
-        fontSize: 16,
-    },
-
-    // --- Card de Material ---
-    card: {
-        flexDirection: 'row',
-        backgroundColor: '#FFF',
-        borderRadius: 10,
-        padding: 15,
-        marginBottom: 15,
-        shadowColor: CARD_SHADOW,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-        elevation: 3,
-        alignItems: 'center',
-    },
-    cardImage: {
-        width: 80,
-        height: 80,
-        borderRadius: 8,
-        marginRight: 15,
-        backgroundColor: LIGHT_GRAY,
-        borderWidth: 1,
-        borderColor: '#eee',
-    },
-    cardDetails: {
-        flex: 1,
-        justifyContent: 'center',
-    },
-    cardName: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#333',
-        marginBottom: 5,
-    },
-    cardPrice: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: PRIMARY_BLUE,
-        marginBottom: 5,
-    },
-    cardFooter: {
-        flexDirection: 'row',
-        alignItems: 'center',
+        color: '#b2e2ff',
+        fontSize: 10,
+        fontWeight: '500',
         marginTop: 2,
     },
-    cardLocation: {
-        fontSize: 12,
-        color: '#7f8c8d',
-        marginLeft: 5,
+    navTextActive: {
+        color: '#FFF',
+        fontWeight: '700',
+    }
+});
+
+// Estilos específicos da tela "Sobre/Serviços"
+const aboutStyles = StyleSheet.create({
+    scrollContainer: {
+        padding: 25,
+        alignItems: 'center', 
+        paddingBottom: 0,
     },
-    cardCategory: {
-        fontSize: 12,
+    // --- Título e Missão ---
+    mainTitle: {
+        fontSize: 28,
+        fontWeight: '600',
         color: DARK_BLUE,
-        fontWeight: '500',
-        marginTop: 5,
+        textAlign: 'center',
+        marginBottom: 20,
+        marginTop: 10,
     },
-    viewButton: {
+    missionText: {
+        fontSize: 16,
+        color: '#555',
+        textAlign: 'center',
+        lineHeight: 24,
+        marginBottom: 30,
+        maxWidth: 600, 
+    },
+    // --- Container de Serviços ---
+    servicesContainer: {
+        width: '100%',
+        maxWidth: 600,
+        flexDirection: 'row', 
+        flexWrap: 'wrap',
+        justifyContent: 'space-between', 
+        paddingHorizontal: 5,
+        marginBottom: 30,
+    },
+    // --- Card de Serviço ---
+    serviceCard: {
+        backgroundColor: '#FFF',
+        borderRadius: 12,
+        padding: 20,
+        width: width > 600 ? '48%' : '100%', 
+        minWidth: 250,
+        marginBottom: 20, 
+        shadowColor: CARD_SHADOW,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        elevation: 6,
+    },
+    serviceIcon: {
+        marginBottom: 10,
+    },
+    cardTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: DARK_BLUE,
+        marginBottom: 8,
+    },
+    cardDescription: {
+        fontSize: 14,
+        color: '#777',
+        lineHeight: 20,
+    },
+    // --- Rodapé ---
+    footerContainer: {
+        width: '100%',
         backgroundColor: PRIMARY_BLUE,
-        padding: 10,
-        borderRadius: 50, // Circular
-        marginLeft: 10,
+        paddingVertical: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
+    footerText: {
+        color: '#FFF',
+        fontSize: 12,
+        fontWeight: '500',
+    }
 });

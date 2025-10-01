@@ -17,12 +17,11 @@ const PRIMARY_BLUE = '#3478bf';
 const DARK_BLUE = '#2c65a0';
 const LIGHT_GRAY = '#f7f9fb';
 
-// Componente de Navegação Superior
+
 const AppHeader = () => (
     <View style={styles.header}>
         <Text style={styles.headerTitle}>Material Share</Text>
         <View style={styles.navLinks}>
-            <MaterialCommunityIcons name="at" size={20} color="#FFF" style={{ marginLeft: 8 }} />
         </View>
     </View>
 );
