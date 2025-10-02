@@ -31,34 +31,30 @@ export default function ProfileScreen({ navigation }) {
         setIsEditing(false);
     };
     
-    // Volta para a tela anterior
-    const handleGoBack = () => {
-        navigation.goBack();
-    };
+    // A função handleGoBack não é mais usada no layout, mas pode ser útil
+    // const handleGoBack = () => {
+    //     navigation.goBack();
+    // };
 
-    // NOVA FUNÇÃO: Gerencia o processo de Logout e Navegação
+    // FUNÇÃO: Gerencia o processo de Logout e Navegação
     const handleLogout = () => {
         // 1. Simular o processo de logout (limpar token, etc.)
-        // console.log("Usuário deslogado."); 
 
         // 2. Navegar para a tela de Login e resetar o histórico de navegação
-        // Isso evita que o usuário volte para a tela de perfil após o logout.
         navigation.reset({
             index: 0,
             routes: [{ name: 'Login' }], // <--- Nome da SUA tela de login
         });
-
-        // Se você não quiser resetar, pode usar apenas:
-        // navigation.navigate('Login'); 
     };
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: LIGHT_GRAY }}>
             {/* Header Customizado da Página de Perfil */}
             <View style={profileStyles.header}>
-                <TouchableOpacity onPress={handleGoBack} style={profileStyles.backButton}>
-                    <Feather name="arrow-left" size={24} color="#FFF" />
-                </TouchableOpacity>
+                
+                {/* ESPAÇO VAZIO para manter o título centralizado */}
+                <View style={{ width: 24 }} /> 
+                
                 <Text style={profileStyles.headerTitle}>Meu Perfil</Text>
                 
                 {/* Botão de Editar/Salvar */}
@@ -139,7 +135,7 @@ export default function ProfileScreen({ navigation }) {
                 {/* Botão de Logout - CHAMANDO handleLogout */}
                 <TouchableOpacity 
                     style={profileStyles.logoutButton} 
-                    onPress={handleLogout} // <--- Chamada para a nova função
+                    onPress={handleLogout} 
                 >
                     <Text style={profileStyles.logoutText}>SAIR DA CONTA</Text>
                     <Feather name="log-out" size={18} color="#C0392B" style={{marginLeft: 8}} />
@@ -151,7 +147,6 @@ export default function ProfileScreen({ navigation }) {
 }
 
 const profileStyles = StyleSheet.create({
-    // ... (Seus estilos permanecem os mesmos) ...
     header: {
         backgroundColor: PRIMARY_BLUE,
         paddingHorizontal: 15,
@@ -166,6 +161,7 @@ const profileStyles = StyleSheet.create({
         fontWeight: '600',
         color: '#FFF',
     },
+    // Estilos restantes mantidos
     scrollContainer: {
         padding: 20,
         alignItems: 'center',
