@@ -6,7 +6,7 @@ import {
     Dimensions,
     SafeAreaView,
     ScrollView,
-    TouchableOpacity, // <--- Importante: Adicionado TouchableOpacity
+    TouchableOpacity, 
 } from 'react-native';
 // Importando ícones
 import { Feather, MaterialCommunityIcons, AntDesign } from '@expo/vector-icons'; 
@@ -19,18 +19,16 @@ const DARK_BLUE = '#2c65a0';
 const LIGHT_GRAY = '#f7f9fb';
 const CARD_SHADOW = '#000';
 
-// Dados dos Serviços
+// Dados dos Serviços (Inalterado)
 const SERVICES_DATA = [
     {
         id: '1',
-        icon: 'message-circle', // Ícone de megafone para Captação e Divulgação
+        icon: 'message-circle', 
         title: 'Captação e Divulgação',
         description: 'Identificamos e cadastramos doadores (pessoas físicas e empresas) que possuem materiais de construção excedentes ou sem uso, como sobras de obras, itens de mostruário ou estoque parado.',
     },
     {
         id: '2',
-        // ATENÇÃO: 'handshake' não é do Feather, mas vamos manter o nome.
-        // Se der interrogação, troque para um Feather (ex: 'link-2').
         icon: 'link', 
         title: 'A Ponte Solidária (Intermediação)',
         description: 'Nosso trabalho é fazer a conexão. Analisamos as doações disponíveis e as cruzamos com as solicitações de beneficiários previamente cadastrados e verificados, como famílias de baixa renda e outras ONGs.',
@@ -49,8 +47,7 @@ const SERVICES_DATA = [
     },
 ];
 
-// Componente de um link de navegação com ícone
-// Mantenho esta função mesmo sem uso, caso você queira reativar os links.
+// Componente de um link de navegação com ícone (Inalterado)
 const NavLink = ({ iconName, label, isCurrent }) => (
     <View style={headerStyles.navLinkContainer}>
         <Feather 
@@ -67,29 +64,39 @@ const NavLink = ({ iconName, label, isCurrent }) => (
     </View>
 );
 
-// CORREÇÃO AQUI: AppHeader AGORA RECEBE A PROPRIEDADE 'navigation'
+// CORREÇÃO: Ícones agrupados em uma View com flexDirection: 'row'
 const AppHeader = ({ navigation }) => (
     <View style={headerStyles.header}>
         <Text style={headerStyles.headerTitle}>Material Share</Text>
         
-        {/* CORREÇÃO AQUI: Ícone de Usuário AGORA ENVOLVIDO EM TouchableOpacity */}
-        <TouchableOpacity 
-            onPress={() => navigation.navigate('Usuario')} // <--- Ação de navegação
-            style={headerStyles.userIconContainer} // Estilo opcional para expandir a área de toque
-        >
-            <Feather name="user" size={30} color="#FFF" />
-        </TouchableOpacity>
+        {/* CONTAINER CHAVE: Agrupa os ícones e os coloca LADO A LADO */}
+        <View style={headerStyles.iconesDireita}>
+            
+            {/* Ícone 1 (Esquerda): Carrinho */}
+            <TouchableOpacity 
+                onPress={() => navigation.navigate('Carrinho')}
+                style={headerStyles.carrinhoIconContainer} 
+            >
+                <Feather name="shopping-cart" size={26} color="#FFF" />
+            </TouchableOpacity>
+
+            {/* Ícone 2 (Direita): Usuário */}
+            <TouchableOpacity 
+               onPress={() => navigation.navigate('Usuario')}
+                style={headerStyles.userIconContainer} 
+            >
+                <Feather name="user" size={26} color="#FFF" /> 
+            </TouchableOpacity>
+
+        </View>
 
     </View>
 );
 
 
-// Componente para renderizar o Card de Serviço
+// Componente para renderizar o Card de Serviço (Inalterado)
 const ServiceCard = ({ item }) => (
     <View style={aboutStyles.serviceCard}>
-        {/* Nota: Se o Card 2 ('handshake') der problema, troque o Feather
-           para o MaterialCommunityIcons, ou mude para um ícone Feather
-           (ex: 'link-2') */}
         <Feather 
             name={item.icon} 
             size={36} 
@@ -105,27 +112,22 @@ const ServiceCard = ({ item }) => (
 export default function AboutScreen({ navigation }) {
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: LIGHT_GRAY }}>
-            {/* CORREÇÃO AQUI: PASSANDO 'navigation' para o AppHeader */}
             <AppHeader navigation={navigation} /> 
             
             <ScrollView contentContainerStyle={aboutStyles.scrollContainer}>
                 
-                {/* Título Principal */}
                 <Text style={aboutStyles.mainTitle}>Nossos Serviços</Text>
                 
-                {/* História/Missão do Site */}
                 <Text style={aboutStyles.missionText}>
                     Na Material Share, nosso principal serviço é atuar como uma ponte. Conectamos a generosidade de quem doa com a necessidade de quem constrói, garantindo que os materiais de construção encontrem seu destino certo.
                 </Text>
                 
-                {/* Renderização dos Cards de Serviço */}
                 <View style={aboutStyles.servicesContainer}>
                     {SERVICES_DATA.map(service => (
                         <ServiceCard key={service.id} item={service} />
                     ))}
                 </View>
                 
-                {/* Rodapé que você viu no design */}
                 <View style={aboutStyles.footerContainer}>
                     <Text style={aboutStyles.footerText}>© 2025 Material Share</Text>
                 </View>
@@ -135,7 +137,7 @@ export default function AboutScreen({ navigation }) {
     );
 }
 
-// Estilos do Header
+// Estilos do Header (headerStyles)
 const headerStyles = StyleSheet.create({
     header: {
         width: '100%',
@@ -157,10 +159,25 @@ const headerStyles = StyleSheet.create({
         color: '#FFF',
         letterSpacing: 0.5,
     },
-    // Estilo opcional para o TouchableOpacity
+    
+    // NOVO ESTILO CHAVE: Ícones lado a lado
+    iconesDireita: {
+        flexDirection: 'row', 
+        alignItems: 'center',
+    },
+    
+    // Ícone de Carrinho (com margem à direita para o Usuário)
+    carrinhoIconContainer: {
+        padding: 5,
+        marginRight: 15, 
+    },
+    
+    // Ícone de Usuário
     userIconContainer: {
         padding: 5,
     },
+    
+    // Restante dos estilos (Inalterado)
     navLinks: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -169,7 +186,7 @@ const headerStyles = StyleSheet.create({
         marginHorizontal: 10,
     },
     navLinkContainer: {
-        flexDirection: 'column', 
+        flexDirection: 'row', 
         alignItems: 'center',
         marginHorizontal: 10,
     },
@@ -185,14 +202,13 @@ const headerStyles = StyleSheet.create({
     }
 });
 
-// Estilos específicos da tela "Sobre/Serviços"
+// Estilos específicos da tela "Sobre/Serviços" (Inalterado)
 const aboutStyles = StyleSheet.create({
     scrollContainer: {
         padding: 25,
         alignItems: 'center', 
         paddingBottom: 0,
     },
-    // --- Título e Missão ---
     mainTitle: {
         fontSize: 28,
         fontWeight: '600',
@@ -209,7 +225,6 @@ const aboutStyles = StyleSheet.create({
         marginBottom: 30,
         maxWidth: 600, 
     },
-    // --- Container de Serviços ---
     servicesContainer: {
         width: '100%',
         maxWidth: 600,
@@ -219,7 +234,6 @@ const aboutStyles = StyleSheet.create({
         paddingHorizontal: 5,
         marginBottom: 30,
     },
-    // --- Card de Serviço ---
     serviceCard: {
         backgroundColor: '#FFF',
         borderRadius: 12,
@@ -247,7 +261,6 @@ const aboutStyles = StyleSheet.create({
         color: '#777',
         lineHeight: 20,
     },
-    // --- Rodapé ---
     footerContainer: {
         width: '100%',
         backgroundColor: PRIMARY_BLUE,
