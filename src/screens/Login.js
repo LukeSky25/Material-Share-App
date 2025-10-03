@@ -8,71 +8,121 @@ import {
     Dimensions,
     SafeAreaView,
     ScrollView,
+    Keyboard, // Importado para fechar o teclado no login
 } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons'; 
 
+// Constantes de Design Refinadas
 const { width } = Dimensions.get('window');
+const PRIMARY_BLUE = '#007BFF'; // Azul Institucional, moderno e forte
+const ACCENT_TEXT = '#333333';
+const LIGHT_BG = '#F0F5F9'; // Fundo Cinza Azulado Suave
+const CARD_BG = '#FFFFFF';
+const SHADOW_COLOR = 'rgba(0, 0, 0, 0.1)';
 
-const PRIMARY_BLUE = '#3478bf';
-const DARK_BLUE = '#2c65a0';
-const LIGHT_GRAY = '#f7f9fb';
-
-
+// Componente de Cabeçalho Elegante
 const AppHeader = () => (
     <View style={styles.header}>
+        <MaterialCommunityIcons name="hammer" size={26} color={PRIMARY_BLUE} />
         <Text style={styles.headerTitle}>Material Share</Text>
-        <View style={styles.navLinks}>
-        </View>
     </View>
 );
 
+// Componente de Input Customizado com Ícone e Foco Visual
+const CustomInput = ({ label, iconName, value, onChangeText, secureTextEntry = false, keyboardType = 'default', autoCapitalize = 'sentences', placeholder, ...props }) => {
+    const [isFocused, setIsFocused] = useState(false);
+    
+    return (
+        <View style={styles.inputGroup}>
+            <Text style={[styles.label, { color: isFocused ? PRIMARY_BLUE : '#777' }]}>{label}</Text>
+            <View 
+                style={[
+                    styles.inputWrapper,
+                    { 
+                        borderColor: isFocused ? PRIMARY_BLUE : '#E0E0E0',
+                        shadowColor: isFocused ? PRIMARY_BLUE : 'transparent',
+                        shadowOpacity: isFocused ? 0.25 : 0,
+                    }
+                ]}
+            >
+                <Feather 
+                    name={iconName} 
+                    size={20} 
+                    color={isFocused ? PRIMARY_BLUE : '#A0A0A0'} 
+                    style={styles.inputIcon} 
+                />
+                <TextInput
+                    style={styles.input}
+                    placeholder={placeholder}
+                    placeholderTextColor="#A0A0A0"
+                    value={value}
+                    onChangeText={onChangeText}
+                    secureTextEntry={secureTextEntry}
+                    keyboardType={keyboardType}
+                    autoCapitalize={autoCapitalize}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    cursorColor={PRIMARY_BLUE}
+                    {...props}
+                />
+            </View>
+        </View>
+    );
+};
+
+
+// Componente Principal
 export default function LoginScreen({ navigation }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [feedback, setFeedback] = useState({ message: '', type: '' });
 
     const handleLogin = () => {
+        Keyboard.dismiss(); // Fecha o teclado ao tentar logar
+        
         if (!email || !password) {
-            setFeedback({ message: 'Por favor, preencha todos os campos.', type: 'error' });
-        } else {
-            setFeedback({ message: `Login bem-sucedido para ${email}!`, type: 'success' });
-            
-            // Simula a navegação para Home após o login
-            setTimeout(() => {
-                navigation.navigate('Home'); 
-            }, 1500);
+            setFeedback({ message: '🚨 Por favor, preencha todos os campos.', type: 'error' });
+            return;
         }
+
+        // Simulação de lógica de login
+        setFeedback({ message: `Acesso em andamento...`, type: 'info' });
+
+        setTimeout(() => {
+            // Lógica de autenticação (simplificada)
+            const success = email.includes('@') && password.length >= 4;
+
+            if (success) {
+                setFeedback({ message: `✅ Login bem-sucedido! Redirecionando...`, type: 'success' });
+                setTimeout(() => {
+                    navigation.navigate('Home'); 
+                }, 1000);
+            } else {
+                 setFeedback({ message: '❌ Email ou senha inválidos. Tente novamente.', type: 'error' });
+            }
+        }, 1500);
     };
 
-    
     const handleCadastro = () => {
         navigation.navigate('Cadastro');
     };
 
+    // Componente de Mensagem de Feedback Detalhado
     const FeedbackMessage = () => {
         if (!feedback.message) return null;
 
-        let bgColor = '#fff';
-        let textColor = '#333';
+        let colorMap = {
+            error: { bgColor: '#FEE2E2', textColor: '#991B1B', borderColor: '#EF4444', icon: 'x-circle' },
+            success: { bgColor: '#D1FAE5', textColor: '#047857', borderColor: '#10B981', icon: 'check-circle' },
+            info: { bgColor: '#DBEAFE', textColor: '#1D4ED8', borderColor: '#3B82F6', icon: 'info' },
+        };
 
-        switch (feedback.type) {
-            case 'error':
-                bgColor = '#fef2f2';
-                textColor = '#b91c1c';
-                break;
-            case 'success':
-                bgColor = '#f0fdf4';
-                textColor = '#15803d';
-                break;
-            case 'info':
-                bgColor = '#eff6ff';
-                textColor = '#1d4ed8';
-                break;
-        }
+        const { bgColor, textColor, borderColor, icon } = colorMap[feedback.type] || colorMap.info;
 
         return (
-            <View style={[styles.feedbackContainer, { backgroundColor: bgColor }]}>
-                <Text style={{ color: textColor, fontSize: 14, textAlign: 'center' }}>
+            <View style={[styles.feedbackContainer, { backgroundColor: bgColor, borderLeftColor: borderColor }]}>
+                <Feather name={icon} size={18} color={textColor} style={{ marginRight: 10 }} />
+                <Text style={{ color: textColor, fontSize: 14, flexShrink: 1 }}>
                     {feedback.message}
                 </Text>
             </View>
@@ -80,93 +130,91 @@ export default function LoginScreen({ navigation }) {
     };
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: LIGHT_GRAY }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: LIGHT_BG }}>
             <AppHeader />
             
             <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
                 
                 <View style={styles.loginCard}>
                     
-                    <Text style={styles.title}>Login</Text>
-                    <Text style={styles.subtitle}>Entre com suas credenciais.</Text>
+                    <View style={styles.iconCircle}>
+                        <MaterialCommunityIcons name="account-circle-outline" size={50} color={PRIMARY_BLUE} />
+                    </View>
+
+                    <Text style={styles.title}>Login de Acesso</Text>
+                    <Text style={styles.subtitle}>Entre para continuar no ecossistema.</Text>
 
                     {/* Campo E-mail */}
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Email</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Digite seu Email..."
-                            placeholderTextColor="#777"
-                            value={email}
-                            onChangeText={setEmail}
-                            keyboardType="email-address"
-                            autoCapitalize="none"
-                            cursorColor={PRIMARY_BLUE}
-                        />
-                    </View>
+                    <CustomInput
+                        label="Email"
+                        iconName="mail"
+                        placeholder="seu.email@exemplo.com"
+                        value={email}
+                        onChangeText={setEmail}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                    />
 
                     {/* Campo Senha */}
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Senha</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Digite sua Senha..."
-                            placeholderTextColor="#777"
-                            value={password}
-                            onChangeText={setPassword}
-                            secureTextEntry
-                            cursorColor={PRIMARY_BLUE}
-                        />
-                    </View>
+                    <CustomInput
+                        label="Senha"
+                        iconName="lock"
+                        placeholder="Digite sua senha"
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry
+                    />
 
-                    {/* Botão Entrar */}
+                    {/* Botão Entrar com Ícone */}
                     <TouchableOpacity 
                         style={styles.button} 
                         onPress={handleLogin}
-                        activeOpacity={0.8}
+                        activeOpacity={0.7}
                     >
-                        <Text style={styles.buttonText}>ENTRAR</Text>
+                        <View style={styles.buttonContent}>
+                            <Text style={styles.buttonText}>ACESSAR</Text>
+                            <Feather name="log-in" size={18} color={CARD_BG} style={{ marginLeft: 10 }} />
+                        </View>
                     </TouchableOpacity>
+
+                    <FeedbackMessage />
 
                     {/* Link de Cadastro */}
                     <View style={styles.signupContainer}>
-                        <Text style={styles.signupText}>Não tem uma conta ainda?</Text>
+                        <Text style={styles.signupText}>Novo por aqui?</Text>
                         <TouchableOpacity onPress={handleCadastro}>
-                            <Text style={styles.signupLink}>crie sua conta já clicando aqui!</Text>
+                            <Text style={styles.signupLink}>Crie sua conta agora!</Text>
                         </TouchableOpacity>
                     </View>
 
-                    <FeedbackMessage />
                 </View>
             </ScrollView>
         </SafeAreaView>
     );
 }
 
+// ---
+// ## Estilos Detalhados
+// ---
+
 const styles = StyleSheet.create({
     header: {
         width: '100%',
-        backgroundColor: PRIMARY_BLUE,
-        paddingHorizontal: 15,
-        paddingVertical: 15,
+        backgroundColor: CARD_BG,
+        paddingHorizontal: 20,
+        paddingVertical: 18,
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
+        justifyContent: 'center',
+        borderBottomWidth: 1,
+        borderBottomColor: '#E0E0E0',
     },
     headerTitle: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#FFF',
+        fontSize: 20,
+        fontWeight: '700',
+        color: ACCENT_TEXT,
         letterSpacing: 0.5,
-    },
-    navLinks: {
-        flexDirection: 'row',
-        alignItems: 'center',
+        marginLeft: 8,
     },
     
     scrollContainer: {
@@ -174,79 +222,120 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         paddingVertical: 40,
-        paddingHorizontal: 15,
+        paddingHorizontal: 20,
+        backgroundColor: LIGHT_BG,
     },
 
     loginCard: {
         width: width * 0.9,
-        maxWidth: 450,
-        backgroundColor: '#FFF',
-        borderRadius: 12,
-        padding: 30,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 5,
+        maxWidth: 420,
+        backgroundColor: CARD_BG,
+        borderRadius: 16,
+        padding: 35,
+        // Sombra suave, flutuante
+        shadowColor: SHADOW_COLOR, 
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
         elevation: 8,
+        borderWidth: 1,
+        borderColor: '#F0F0F0',
+    },
+    iconCircle: {
+        alignSelf: 'center',
+        marginBottom: 20,
+        padding: 15,
+        borderRadius: 50,
+        backgroundColor: '#EBF5FF', // Fundo sutil para o ícone
+        borderWidth: 2,
+        borderColor: PRIMARY_BLUE + '20', // Borda semitransparente
     },
     title: {
-        fontSize: 28,
-        fontWeight: '300',
-        color: '#333',
+        fontSize: 26,
+        fontWeight: '700',
+        color: ACCENT_TEXT,
         textAlign: 'center',
-        marginBottom: 4,
+        marginBottom: 8,
     },
     subtitle: {
         color: '#777',
         textAlign: 'center',
-        marginBottom: 30,
-        fontSize: 14,
+        marginBottom: 35,
+        fontSize: 15,
     },
 
+    // ---
+    // Inputs
+    // ---
     inputGroup: {
-        marginBottom: 25,
+        marginBottom: 20,
     },
     label: {
-        fontSize: 10,
-        fontWeight: '600',
-        color: '#555',
+        fontSize: 12,
+        fontWeight: 'bold',
         textTransform: 'uppercase',
-        letterSpacing: 1,
-        marginBottom: 4,
+        letterSpacing: 0.8,
+        marginBottom: 6,
+    },
+    inputWrapper: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderWidth: 1.5,
+        borderRadius: 10,
+        paddingHorizontal: 15,
+        height: 52,
+        backgroundColor: '#F9F9F9',
+        shadowOffset: { width: 0, height: 3 },
+        shadowRadius: 5,
+        elevation: 3,
+        shadowColor: SHADOW_COLOR,
+        shadowOpacity: 0.1,
+    },
+    inputIcon: {
+        marginRight: 12,
     },
     input: {
-        height: 40,
-        borderBottomColor: '#ccc',
-        borderBottomWidth: 1.5,
+        flex: 1,
         fontSize: 16,
-        paddingHorizontal: 0,
-        paddingVertical: 5,
+        color: ACCENT_TEXT,
+        paddingVertical: 0,
     },
 
+    // ---
+    // Botão
+    // ---
     button: {
+        height: 52,
         backgroundColor: PRIMARY_BLUE,
-        paddingVertical: 14,
-        borderRadius: 8,
+        borderRadius: 10,
         alignItems: 'center',
         justifyContent: 'center',
-        marginTop: 20,
-        shadowColor: DARK_BLUE,
-        shadowOffset: { width: 0, height: 5 },
-        shadowOpacity: 0.3,
-        shadowRadius: 6,
-        elevation: 8,
+        marginTop: 30,
+        // Sombra forte para o botão de ação
+        shadowColor: PRIMARY_BLUE,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.5,
+        shadowRadius: 10,
+        elevation: 15,
+    },
+    buttonContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     buttonText: {
-        color: '#FFF',
-        fontSize: 16,
+        color: CARD_BG,
+        fontSize: 17,
         fontWeight: 'bold',
-        letterSpacing: 0.5,
+        letterSpacing: 1.5,
     },
     
+    // ---
+    // Link de Cadastro
+    // ---
     signupContainer: {
         flexDirection: 'row',
         justifyContent: 'center',
-        marginTop: 30,
+        marginTop: 35,
         flexWrap: 'wrap',
     },
     signupText: {
@@ -259,11 +348,23 @@ const styles = StyleSheet.create({
         color: PRIMARY_BLUE,
         fontWeight: 'bold',
         textDecorationLine: 'underline',
+        letterSpacing: 0.3,
     },
 
+    // ---
+    // Feedback
+    // ---
     feedbackContainer: {
-        marginTop: 20,
-        padding: 12,
-        borderRadius: 8,
+        marginTop: 25,
+        padding: 15,
+        borderRadius: 10,
+        borderLeftWidth: 5, 
+        flexDirection: 'row',
+        alignItems: 'center',
+        shadowColor: SHADOW_COLOR,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
+        elevation: 3,
     }
 });

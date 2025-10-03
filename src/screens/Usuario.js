@@ -5,18 +5,91 @@ import {
     TextInput,
     TouchableOpacity,
     StyleSheet,
+    Dimensions,
     SafeAreaView,
     ScrollView,
     Alert,
 } from 'react-native';
-import { Feather } from '@expo/vector-icons'; 
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons'; 
 
-// Cores baseadas no seu tema
-const PRIMARY_BLUE = '#3478bf';
-const DARK_BLUE = '#2c65a0';
-const LIGHT_GRAY = '#f7f9fb';
-const CARD_SHADOW = '#000';
+// --- Constantes de Design Refinadas (Copiadas do Login) ---
+const { width } = Dimensions.get('window');
+const PRIMARY_BLUE = '#007BFF'; // Azul Institucional
+const ACCENT_TEXT = '#333333';
+const LIGHT_BG = '#F0F5F9'; // Fundo Cinza Azulado Suave
+const CARD_BG = '#FFFFFF';
+const SHADOW_COLOR = 'rgba(0, 0, 0, 0.1)';
+const DARK_BLUE = '#1D4ED8'; // Um azul escuro para o texto principal
 
+// ----------------------------------------------------------------
+// Componente de Cabeçalho (Botão de Voltar Removido)
+// ----------------------------------------------------------------
+const AppHeader = ({ isEditing, onEditSave }) => (
+    <View style={profileStyles.header}>
+        {/* Placeholder transparente para manter o alinhamento central do título, 
+            já que o botão de Voltar foi removido. */}
+        <View style={profileStyles.headerButton} /> 
+        
+        <Text style={profileStyles.headerTitle}>Meu Perfil</Text>
+        
+        {/* Botão de Editar/Salvar */}
+        <TouchableOpacity 
+            onPress={onEditSave} 
+            style={profileStyles.headerButton}
+        >
+            <Feather 
+                name={isEditing ? "check" : "edit-3"} // edit-3 é mais sutil
+                size={24} 
+                color={CARD_BG} 
+            />
+        </TouchableOpacity>
+    </View>
+);
+
+// ----------------------------------------------------------------
+// Componente de Input Customizado (Baseado no CustomInput do Login)
+// ----------------------------------------------------------------
+const CustomProfileInput = ({ label, iconName, value, onChangeText, editable, ...props }) => {
+    // Usamos 'editable' para definir o foco visual aqui
+    const isFocused = editable; 
+    
+    return (
+        <View style={profileStyles.inputGroup}>
+            <Text style={[profileStyles.label, { color: isFocused ? PRIMARY_BLUE : '#777' }]}>{label}</Text>
+            <View 
+                style={[
+                    profileStyles.inputWrapper,
+                    { 
+                        borderColor: isFocused ? PRIMARY_BLUE : '#E0E0E0',
+                        shadowColor: isFocused ? PRIMARY_BLUE : 'transparent',
+                        shadowOpacity: isFocused ? 0.2 : 0,
+                        backgroundColor: editable ? '#FFF' : LIGHT_BG, // Fundo levemente diferente quando não é editável
+                    }
+                ]}
+            >
+                <Feather 
+                    name={iconName} 
+                    size={20} 
+                    color={isFocused ? PRIMARY_BLUE : '#A0A0A0'} 
+                    style={profileStyles.inputIcon} 
+                />
+                <TextInput
+                    style={profileStyles.input}
+                    value={value}
+                    onChangeText={onChangeText}
+                    editable={editable}
+                    cursorColor={PRIMARY_BLUE}
+                    placeholderTextColor="#A0A0A0"
+                    {...props}
+                />
+            </View>
+        </View>
+    );
+};
+
+// ----------------------------------------------------------------
+// Componente Principal
+// ----------------------------------------------------------------
 export default function ProfileScreen({ navigation }) {
     // Dados simulados do usuário
     const [name, setName] = useState('João da Silva');
@@ -31,201 +104,253 @@ export default function ProfileScreen({ navigation }) {
         setIsEditing(false);
     };
     
-    // A função handleGoBack não é mais usada no layout, mas pode ser útil
-    // const handleGoBack = () => {
-    //     navigation.goBack();
-    // };
+    const handleGoBack = () => {
+        navigation.goBack();
+    };
 
-    // FUNÇÃO: Gerencia o processo de Logout e Navegação
     const handleLogout = () => {
         // 1. Simular o processo de logout (limpar token, etc.)
-
-        // 2. Navegar para a tela de Login e resetar o histórico de navegação
-        navigation.reset({
-            index: 0,
-            routes: [{ name: 'Login' }], // <--- Nome da SUA tela de login
-        });
+        Alert.alert(
+            "Sair da Conta",
+            "Tem certeza que deseja fazer logout?",
+            [
+                { text: "Cancelar", style: "cancel" },
+                { 
+                    text: "Sair", 
+                    style: "destructive",
+                    onPress: () => navigation.reset({
+                        index: 0,
+                        routes: [{ name: 'Login' }], // Redireciona para a tela de Login
+                    })
+                }
+            ]
+        );
     };
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: LIGHT_GRAY }}>
-            {/* Header Customizado da Página de Perfil */}
-            <View style={profileStyles.header}>
-                
-                {/* ESPAÇO VAZIO para manter o título centralizado */}
-                <View style={{ width: 24 }} /> 
-                
-                <Text style={profileStyles.headerTitle}>Meu Perfil</Text>
-                
-                {/* Botão de Editar/Salvar */}
-                <TouchableOpacity onPress={() => isEditing ? handleSave() : setIsEditing(true)}>
-                    <Feather 
-                        name={isEditing ? "check" : "edit"} 
-                        size={24} 
-                        color="#FFF" 
-                    />
-                </TouchableOpacity>
-            </View>
-
+        <SafeAreaView style={{ flex: 1, backgroundColor: LIGHT_BG }}>
+            {/* Header com os botões de ação (sem o botão de voltar) */}
+            <AppHeader 
+             navigation={navigation} 
+                isEditing={isEditing}
+                onEditSave={() => isEditing ? handleSave() : setIsEditing(true)}
+                 onGoBack={handleGoBack}
+            /> 
+            
             <ScrollView contentContainerStyle={profileStyles.scrollContainer}>
                 
                 <View style={profileStyles.profileCard}>
-                    {/* Ícone de Avatar */}
-                    <View style={profileStyles.avatarContainer}>
-                        <Feather name="user" size={60} color={DARK_BLUE} />
+                    
+                    {/* Ícone de Avatar com estilo do Login */}
+                    <View style={profileStyles.iconCircle}>
+                        <MaterialCommunityIcons name="account-circle-outline" size={50} color={PRIMARY_BLUE} />
                     </View>
                     
-                    <Text style={profileStyles.sectionTitle}>Informações Pessoais</Text>
+                    <Text style={profileStyles.title}>Meus Dados</Text>
+                    <Text style={profileStyles.subtitle}>Gerencie suas informações pessoais e de contato.</Text>
 
                     {/* Campo Nome */}
-                    <View style={profileStyles.inputGroup}>
-                        <Text style={profileStyles.label}>Nome Completo</Text>
-                        <TextInput
-                            style={profileStyles.input}
-                            value={name}
-                            onChangeText={setName}
-                            editable={isEditing}
-                            cursorColor={PRIMARY_BLUE}
-                        />
-                    </View>
+                    <CustomProfileInput
+                        label="Nome Completo"
+                        iconName="user"
+                        value={name}
+                        onChangeText={setName}
+                        editable={isEditing}
+                        autoCapitalize="words"
+                    />
 
                     {/* Campo Email */}
-                    <View style={profileStyles.inputGroup}>
-                        <Text style={profileStyles.label}>Email</Text>
-                        <TextInput
-                            style={profileStyles.input}
-                            value={email}
-                            onChangeText={setEmail}
-                            keyboardType="email-address"
-                            editable={isEditing}
-                            cursorColor={PRIMARY_BLUE}
-                        />
-                    </View>
+                    <CustomProfileInput
+                        label="Email"
+                        iconName="mail"
+                        value={email}
+                        onChangeText={setEmail}
+                        editable={isEditing}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                    />
 
                     {/* Campo Telefone */}
-                    <View style={profileStyles.inputGroup}>
-                        <Text style={profileStyles.label}>Telefone</Text>
-                        <TextInput
-                            style={profileStyles.input}
-                            value={phone}
-                            onChangeText={setPhone}
-                            keyboardType="phone-pad"
-                            editable={isEditing}
-                            cursorColor={PRIMARY_BLUE}
-                        />
-                    </View>
-
-                    <Text style={[profileStyles.sectionTitle, {marginTop: 20}]}>Localização</Text>
+                    <CustomProfileInput
+                        label="Telefone"
+                        iconName="phone"
+                        value={phone}
+                        onChangeText={setPhone}
+                        editable={isEditing}
+                        keyboardType="phone-pad"
+                    />
 
                     {/* Campo Endereço */}
-                    <View style={profileStyles.inputGroup}>
-                        <Text style={profileStyles.label}>Endereço Principal</Text>
-                        <TextInput
-                            style={profileStyles.input}
-                            value={address}
-                            onChangeText={setAddress}
-                            editable={isEditing}
-                            cursorColor={PRIMARY_BLUE}
-                            multiline
-                        />
-                    </View>
-
+                    <CustomProfileInput
+                        label="Endereço Principal"
+                        iconName="map-pin"
+                        value={address}
+                        onChangeText={setAddress}
+                        editable={isEditing}
+                        multiline
+                        style={profileStyles.multilineInput} // Estilo para multiline
+                    />
                 </View>
                 
-                {/* Botão de Logout - CHAMANDO handleLogout */}
+                {/* Botão de Logout com estilo do botão do Login (vermelho) */}
                 <TouchableOpacity 
                     style={profileStyles.logoutButton} 
-                    onPress={handleLogout} 
+                    onPress={() => navigation.navigate('Login')} 
+                    activeOpacity={0.8}
                 >
+                    <Feather name="log-out" size={18} color={CARD_BG} style={{marginRight: 10}} />
                     <Text style={profileStyles.logoutText}>SAIR DA CONTA</Text>
-                    <Feather name="log-out" size={18} color="#C0392B" style={{marginLeft: 8}} />
                 </TouchableOpacity>
 
-            </ScrollView>
+            </ScrollView> 
         </SafeAreaView>
     );
 }
 
+// ---
+// ## Estilos
+// ---
+
 const profileStyles = StyleSheet.create({
+    // --- Header ---
     header: {
         backgroundColor: PRIMARY_BLUE,
         paddingHorizontal: 15,
-        paddingVertical: 15,
+        paddingVertical: 18,
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'space-between', // Mantém space-between para centralizar o título entre o placeholder e o botão
         alignItems: 'center',
         elevation: 5,
+        // Sombra de topo igual ao botão de login, mas com azul escuro
+        shadowColor: DARK_BLUE, 
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.8,
+        shadowRadius: 5,
     },
     headerTitle: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#FFF',
-    },
-    // Estilos restantes mantidos
-    scrollContainer: {
-        padding: 20,
-        alignItems: 'center',
-    },
-    profileCard: {
-        width: '100%',
-        maxWidth: 500,
-        backgroundColor: '#FFF',
-        borderRadius: 12,
-        padding: 30,
-        marginBottom: 20,
-        elevation: 5,
-        shadowColor: CARD_SHADOW,
-    },
-    avatarContainer: {
-        alignSelf: 'center',
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        backgroundColor: LIGHT_GRAY,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 30,
-        borderWidth: 2,
-        borderColor: DARK_BLUE,
-    },
-    sectionTitle: {
-        fontSize: 16,
+        fontSize: 20,
         fontWeight: '700',
-        color: DARK_BLUE,
-        marginBottom: 15,
-        borderBottomWidth: 1,
-        borderBottomColor: LIGHT_GRAY,
-        paddingBottom: 5,
+        color: CARD_BG,
+        letterSpacing: 0.5,
     },
+    headerButton: {
+        padding: 5, // Área de toque, usado como placeholder
+        minWidth: 34, // Garante que o placeholder tenha o mesmo tamanho do ícone
+    },
+    
+    // --- Container Principal ---
+    scrollContainer: {
+        flexGrow: 1,
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        paddingVertical: 40,
+        paddingHorizontal: 20,
+        backgroundColor: LIGHT_BG,
+    },
+
+    // --- Cartão de Perfil (Login Card Style) ---
+    profileCard: {
+        width: width * 0.9,
+        maxWidth: 500,
+        backgroundColor: CARD_BG,
+        borderRadius: 16,
+        padding: 35,
+        marginBottom: 30,
+        // Sombra suave, flutuante (Login Card)
+        shadowColor: SHADOW_COLOR, 
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+        elevation: 8,
+        borderWidth: 1,
+        borderColor: '#F0F0F0',
+    },
+    iconCircle: {
+        alignSelf: 'center',
+        marginBottom: 20,
+        padding: 15,
+        borderRadius: 50,
+        backgroundColor: '#EBF5FF', // Fundo sutil
+        borderWidth: 2,
+        borderColor: PRIMARY_BLUE + '20', 
+    },
+    title: {
+        fontSize: 26,
+        fontWeight: '700',
+        color: ACCENT_TEXT,
+        textAlign: 'center',
+        marginBottom: 8,
+    },
+    subtitle: {
+        color: '#777',
+        textAlign: 'center',
+        marginBottom: 35,
+        fontSize: 15,
+    },
+
+    // --- Inputs (Custom Input Style do Login) ---
     inputGroup: {
-        marginBottom: 15,
+        marginBottom: 20,
     },
     label: {
         fontSize: 12,
-        fontWeight: '600',
-        color: '#777',
-        marginBottom: 4,
+        fontWeight: 'bold',
+        textTransform: 'uppercase',
+        letterSpacing: 0.8,
+        marginBottom: 6,
     },
-    input: {
-        borderBottomColor: '#ccc',
-        borderBottomWidth: 1,
-        paddingVertical: 5,
-        fontSize: 16,
-        color: '#333',
-    },
-    logoutButton: {
+    inputWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#FADBD8',
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#C0392B',
+        borderWidth: 1.5,
+        borderRadius: 10,
+        paddingHorizontal: 15,
+        minHeight: 52, // Usado minHeight para multiline
+        backgroundColor: '#F9F9F9',
+        shadowOffset: { width: 0, height: 3 },
+        shadowRadius: 5,
+        elevation: 3,
+        shadowColor: SHADOW_COLOR,
+        shadowOpacity: 0.1,
+    },
+    inputIcon: {
+        marginRight: 12,
+    },
+    input: {
+        flex: 1,
+        fontSize: 16,
+        color: ACCENT_TEXT,
+        paddingVertical: 10, // Adicionado padding vertical para multiline
+    },
+    multilineInput: {
+        minHeight: 100,
+        textAlignVertical: 'top', // Garante que o texto multiline comece no topo
+        paddingTop: 10, 
+        paddingBottom: 10,
+    },
+
+    // --- Botão de Logout (Adaptado do estilo do botão principal de Login) ---
+    logoutButton: {
+        width: '100%',
+        maxWidth: 500,
+        height: 52,
+        backgroundColor: '#C0392B', // Vermelho forte
+        borderRadius: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        // Sombra forte (como no botão de login)
+        shadowColor: '#C0392B',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.5,
+        shadowRadius: 10,
+        elevation: 15,
+        marginTop: 10,
     },
     logoutText: {
-        color: '#C0392B',
-        fontSize: 16,
+        color: CARD_BG,
+        fontSize: 17,
         fontWeight: 'bold',
+        letterSpacing: 1.5,
     },
 });

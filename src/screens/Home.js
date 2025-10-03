@@ -8,16 +8,16 @@ import {
     ScrollView,
     TouchableOpacity, 
 } from 'react-native';
-// Importando ícones
-import { Feather, MaterialCommunityIcons, AntDesign } from '@expo/vector-icons'; 
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons'; 
 
+// --- Constantes de Design Refinadas (Copiadas do Login) ---
 const { width } = Dimensions.get('window');
-
-// Cores baseadas no seu tema
-const PRIMARY_BLUE = '#3478bf';
-const DARK_BLUE = '#2c65a0';
-const LIGHT_GRAY = '#f7f9fb';
-const CARD_SHADOW = '#000';
+const PRIMARY_BLUE = '#007BFF'; // Azul Institucional
+const DARK_BLUE = '#1D4ED8'; // Um azul escuro para texto e títulos
+const LIGHT_BG = '#F0F5F9'; // Fundo Cinza Azulado Suave
+const CARD_BG = '#FFFFFF';
+const ACCENT_TEXT = '#333333';
+const SHADOW_COLOR = 'rgba(0, 0, 0, 0.1)';
 
 // Dados dos Serviços (Inalterado)
 const SERVICES_DATA = [
@@ -47,62 +47,46 @@ const SERVICES_DATA = [
     },
 ];
 
-// Componente de um link de navegação com ícone (Inalterado)
-const NavLink = ({ iconName, label, isCurrent }) => (
-    <View style={headerStyles.navLinkContainer}>
-        <Feather 
-            name={iconName} 
-            size={18} 
-            color={isCurrent ? '#FFF' : '#b2e2ff'} 
-        />
-        <Text style={[
-            headerStyles.navText, 
-            isCurrent && headerStyles.navTextActive 
-        ]}>
-            {label}
-        </Text>
-    </View>
-);
-
-// CORREÇÃO: Ícones agrupados em uma View com flexDirection: 'row'
+// --- Componente de Cabeçalho Elegante (Adaptado para navegação) ---
 const AppHeader = ({ navigation }) => (
     <View style={headerStyles.header}>
-        <Text style={headerStyles.headerTitle}>Material Share</Text>
-        
-        {/* CONTAINER CHAVE: Agrupa os ícones e os coloca LADO A LADO */}
-        <View style={headerStyles.iconesDireita}>
-            
-            {/* Ícone 1 (Esquerda): Carrinho */}
-            <TouchableOpacity 
-                onPress={() => navigation.navigate('Carrinho')}
-                style={headerStyles.carrinhoIconContainer} 
-            >
-                <Feather name="shopping-cart" size={26} color="#FFF" />
-            </TouchableOpacity>
-
-            {/* Ícone 2 (Direita): Usuário */}
-            <TouchableOpacity 
-               onPress={() => navigation.navigate('Usuario')}
-                style={headerStyles.userIconContainer} 
-            >
-                <Feather name="user" size={26} color="#FFF" /> 
-            </TouchableOpacity>
-
+        <View style={headerStyles.logoContainer}>
+             {/* Use o ícone de martelo do MaterialCommunityIcons para consistência com o login */}
+            <MaterialCommunityIcons name="screw-machine-flat-top" size={26} color={PRIMARY_BLUE} /> 
+            <Text style={headerStyles.headerTitle}>Material Share</Text>
         </View>
 
+        {/* Ícones de Ação à Direita */}
+        <View style={headerStyles.iconesDireita}>
+            <TouchableOpacity 
+                onPress={() => navigation.navigate('Carrinho')}
+                style={headerStyles.iconButton} 
+            >
+                <Feather name="shopping-cart" size={22} color={PRIMARY_BLUE} />
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+               onPress={() => navigation.navigate('Usuario')}
+               style={headerStyles.iconButton} 
+            >
+                <Feather name="user" size={22} color={PRIMARY_BLUE} /> 
+            </TouchableOpacity>
+        </View>
     </View>
 );
 
 
-// Componente para renderizar o Card de Serviço (Inalterado)
+// --- Componente para renderizar o Card de Serviço Aprimorado ---
 const ServiceCard = ({ item }) => (
     <View style={aboutStyles.serviceCard}>
-        <Feather 
-            name={item.icon} 
-            size={36} 
-            color={PRIMARY_BLUE} 
-            style={aboutStyles.serviceIcon} 
-        />
+        {/* Ícone com Fundo Suave - Estilo de 'iconCircle' do login */}
+        <View style={aboutStyles.serviceIconContainer}>
+            <Feather 
+                name={item.icon} 
+                size={28} 
+                color={PRIMARY_BLUE} 
+            />
+        </View>
         <Text style={aboutStyles.cardTitle}>{item.title}</Text>
         <Text style={aboutStyles.cardDescription}>{item.description}</Text>
     </View>
@@ -111,16 +95,18 @@ const ServiceCard = ({ item }) => (
 
 export default function AboutScreen({ navigation }) {
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: LIGHT_GRAY }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: LIGHT_BG }}>
             <AppHeader navigation={navigation} /> 
             
             <ScrollView contentContainerStyle={aboutStyles.scrollContainer}>
                 
                 <Text style={aboutStyles.mainTitle}>Nossos Serviços</Text>
                 
-                <Text style={aboutStyles.missionText}>
-                    Na Material Share, nosso principal serviço é atuar como uma ponte. Conectamos a generosidade de quem doa com a necessidade de quem constrói, garantindo que os materiais de construção encontrem seu destino certo.
-                </Text>
+                <View style={aboutStyles.missionContainer}>
+                    <Text style={aboutStyles.missionText}>
+                        Na Material Share, nosso principal serviço é atuar como uma ponte. Conectamos a generosidade de quem doa com a necessidade de quem constrói, garantindo que os materiais de construção encontrem seu destino certo.
+                    </Text>
+                </View>
                 
                 <View style={aboutStyles.servicesContainer}>
                     {SERVICES_DATA.map(service => (
@@ -128,149 +114,132 @@ export default function AboutScreen({ navigation }) {
                     ))}
                 </View>
                 
-                <View style={aboutStyles.footerContainer}>
-                    <Text style={aboutStyles.footerText}>© 2025 Material Share</Text>
-                </View>
-                
             </ScrollView>
         </SafeAreaView>
     );
 }
 
+// ---
+// ## Estilos
+// ---
+
 // Estilos do Header (headerStyles)
 const headerStyles = StyleSheet.create({
     header: {
         width: '100%',
-        backgroundColor: PRIMARY_BLUE,
-        paddingHorizontal: 15,
-        paddingVertical: 12,
+        backgroundColor: CARD_BG,
+        paddingHorizontal: 20,
+        paddingVertical: 18,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        shadowColor: CARD_SHADOW,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
+        borderBottomWidth: 1,
+        borderBottomColor: '#E0E0E0',
+    },
+    logoContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     headerTitle: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#FFF',
+        fontSize: 20,
+        fontWeight: '700',
+        color: ACCENT_TEXT,
         letterSpacing: 0.5,
+        marginLeft: 8,
     },
     
-    // NOVO ESTILO CHAVE: Ícones lado a lado
     iconesDireita: {
         flexDirection: 'row', 
         alignItems: 'center',
     },
     
-    // Ícone de Carrinho (com margem à direita para o Usuário)
-    carrinhoIconContainer: {
-        padding: 5,
-        marginRight: 15, 
+    iconButton: {
+        padding: 5, // Área de toque
+        marginLeft: 15, 
     },
-    
-    // Ícone de Usuário
-    userIconContainer: {
-        padding: 5,
-    },
-    
-    // Restante dos estilos (Inalterado)
-    navLinks: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        flex: 1, 
-        justifyContent: 'center', 
-        marginHorizontal: 10,
-    },
-    navLinkContainer: {
-        flexDirection: 'row', 
-        alignItems: 'center',
-        marginHorizontal: 10,
-    },
-    navText: {
-        color: '#b2e2ff',
-        fontSize: 10,
-        fontWeight: '500',
-        marginTop: 2,
-    },
-    navTextActive: {
-        color: '#FFF',
-        fontWeight: '700',
-    }
 });
 
-// Estilos específicos da tela "Sobre/Serviços" (Inalterado)
+// Estilos específicos da tela "Sobre/Serviços" (Refatorados)
 const aboutStyles = StyleSheet.create({
     scrollContainer: {
-        padding: 25,
+        paddingVertical: 40,
+        paddingHorizontal: 20,
         alignItems: 'center', 
-        paddingBottom: 0,
+        backgroundColor: LIGHT_BG, // Fundo claro do login
     },
     mainTitle: {
-        fontSize: 28,
-        fontWeight: '600',
+        fontSize: 28, // Um pouco menor que o título do login para não competir
+        fontWeight: '800',
         color: DARK_BLUE,
         textAlign: 'center',
-        marginBottom: 20,
-        marginTop: 10,
+        marginBottom: 30,
+        textTransform: 'uppercase',
+        letterSpacing: 1,
+    },
+    missionContainer: {
+        width: '100%',
+        maxWidth: 600,
+        backgroundColor: CARD_BG,
+        padding: 25,
+        borderRadius: 10,
+        marginBottom: 40,
+        // Sombra leve do cartão de login
+        shadowColor: SHADOW_COLOR, 
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
+        elevation: 5,
     },
     missionText: {
-        fontSize: 16,
-        color: '#555',
+        fontSize: 16, 
+        color: '#555', 
         textAlign: 'center',
-        lineHeight: 24,
-        marginBottom: 30,
-        maxWidth: 600, 
+        lineHeight: 25,
     },
     servicesContainer: {
         width: '100%',
-        maxWidth: 600,
+        maxWidth: 700,
         flexDirection: 'row', 
         flexWrap: 'wrap',
-        justifyContent: 'space-between', 
-        paddingHorizontal: 5,
+        justifyContent: 'space-around', 
         marginBottom: 30,
     },
     serviceCard: {
-        backgroundColor: '#FFF',
-        borderRadius: 12,
-        padding: 20,
-        width: width > 600 ? '48%' : '100%', 
-        minWidth: 250,
-        marginBottom: 20, 
-        shadowColor: CARD_SHADOW,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-        elevation: 6,
+        backgroundColor: CARD_BG,
+        borderRadius: 16, // Borda suave do login
+        padding: 25,
+        width: width > 600 ? '45%' : '95%', 
+        minWidth: 280,
+        marginBottom: 25, 
+        // Sombra do loginCard
+        shadowColor: SHADOW_COLOR, 
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.25,
+        shadowRadius: 10,
+        elevation: 8,
+        borderWidth: 1,
+        borderColor: '#F0F0F0',
+        alignItems: 'flex-start',
     },
-    serviceIcon: {
-        marginBottom: 10,
+    serviceIconContainer: {
+        alignSelf: 'flex-start',
+        marginBottom: 15,
+        padding: 15,
+        borderRadius: 50,
+        backgroundColor: '#EBF5FF', // Fundo sutil para o ícone
+        borderWidth: 2,
+        borderColor: PRIMARY_BLUE + '20', 
     },
     cardTitle: {
-        fontSize: 18,
-        fontWeight: '700',
-        color: DARK_BLUE,
-        marginBottom: 8,
+        fontSize: 20, 
+        fontWeight: '700', // Correspondendo ao peso do login
+        color: ACCENT_TEXT,
+        marginBottom: 10,
+        letterSpacing: 0.5,
     },
     cardDescription: {
-        fontSize: 14,
-        color: '#777',
-        lineHeight: 20,
+        fontSize: 15, 
+        color: '#666', 
+        lineHeight: 22,
     },
-    footerContainer: {
-        width: '100%',
-        backgroundColor: PRIMARY_BLUE,
-        paddingVertical: 10,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    footerText: {
-        color: '#FFF',
-        fontSize: 12,
-        fontWeight: '500',
-    }
 });
