@@ -88,14 +88,66 @@ const CustomProfileInput = ({ label, iconName, value, onChangeText, editable, ..
 };
 
 // ----------------------------------------------------------------
+// NOVO Componente Seletor de Tipo de Usuário (Doador/Recebedor)
+// ----------------------------------------------------------------
+const UserTypeSelector = ({ userType, setUserType, isEditing }) => (
+    <View style={profileStyles.inputGroup}>
+        <Text style={[profileStyles.label, { color: isEditing ? PRIMARY_BLUE : '#777' }]}>
+            Tipo de Usuário
+        </Text>
+        <View style={[
+            profileStyles.userTypeContainer,
+            { borderColor: isEditing ? PRIMARY_BLUE : '#E0E0E0' }
+        ]}>
+            {['Doador', 'Recebedor'].map((type, index) => (
+                <TouchableOpacity
+                    key={type}
+                    style={[
+                        profileStyles.typeOption,
+                        userType === type && profileStyles.typeOptionActive,
+                        !isEditing && profileStyles.typeOptionInactive,
+                        // Adiciona borda sutil no meio se não for o último elemento
+                        index === 0 && { borderRightWidth: StyleSheet.hairlineWidth, borderRightColor: '#E0E0E0' } 
+                    ]}
+                    onPress={() => isEditing && setUserType(type)}
+                    activeOpacity={isEditing ? 0.7 : 1}
+                    disabled={!isEditing}
+                >
+                    <Text style={[
+                        profileStyles.typeText,
+                        userType === type && profileStyles.typeTextActive,
+                        // Texto escuro no modo leitura se não estiver ativo
+                        !isEditing && userType !== type && { color: '#A0A0A0' }, 
+                        // Texto escuro no modo leitura se for o ativo
+                        !isEditing && userType === type && { color: ACCENT_TEXT }, 
+                    ]}>
+                        {type}
+                    </Text>
+                </TouchableOpacity>
+            ))}
+        </View>
+    </View>
+);
+
+
+// ----------------------------------------------------------------
 // Componente Principal
 // ----------------------------------------------------------------
 export default function ProfileScreen({ navigation }) {
-    // Dados simulados do usuário
+    // Dados simulados do usuário - AGORA COM NOVOS CAMPOS
     const [name, setName] = useState('João da Silva');
     const [email, setEmail] = useState('joao.silva@email.com');
     const [phone, setPhone] = useState('(99) 99999-9999');
-    const [address, setAddress] = useState('Rua dos Materiais, 123 - SP');
+    const [address, setAddress] = useState('Rua dos Materiais, 123 - Centro'); // Detalhe do endereço
+    
+    // --- NOVOS CAMPOS ADICIONADOS ---
+    const [birthDate, setBirthDate] = useState('01/01/1990');
+    const [cpf, setCpf] = useState('123.456.789-00');
+    const [cep, setCep] = useState('01000-000');
+    // Tipo de usuário inicializado como Doador
+    const [userType, setUserType] = useState('Doador'); 
+    // ----------------------------------
+    
     const [isEditing, setIsEditing] = useState(false);
 
     const handleSave = () => {
@@ -105,11 +157,12 @@ export default function ProfileScreen({ navigation }) {
     };
     
     const handleGoBack = () => {
-        navigation.goBack();
+        // navigation.goBack(); 
+        Alert.alert("Navegação", "Simular navegação de volta ou para a tela Home.");
     };
 
     const handleLogout = () => {
-        // 1. Simular o processo de logout (limpar token, etc.)
+        // Lógica de logout
         Alert.alert(
             "Sair da Conta",
             "Tem certeza que deseja fazer logout?",
@@ -118,10 +171,9 @@ export default function ProfileScreen({ navigation }) {
                 { 
                     text: "Sair", 
                     style: "destructive",
-                    onPress: () => navigation.reset({
-                        index: 0,
-                        routes: [{ name: 'Login' }], // Redireciona para a tela de Login
-                    })
+                    onPress: () => Alert.alert("Logout", "Redirecionando para a tela de Login...")
+                    // Na vida real: 
+                    // onPress: () => navigation.reset({ index: 0, routes: [{ name: 'Login' }], })
                 }
             ]
         );
@@ -129,12 +181,12 @@ export default function ProfileScreen({ navigation }) {
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: LIGHT_BG }}>
-            {/* Header com os botões de ação (sem o botão de voltar) */}
+            {/* Header com os botões de ação */}
             <AppHeader 
              navigation={navigation} 
                 isEditing={isEditing}
                 onEditSave={() => isEditing ? handleSave() : setIsEditing(true)}
-                 onGoBack={handleGoBack}
+                onGoBack={handleGoBack}
             /> 
             
             <ScrollView contentContainerStyle={profileStyles.scrollContainer}>
@@ -159,6 +211,16 @@ export default function ProfileScreen({ navigation }) {
                         autoCapitalize="words"
                     />
 
+                    {/* Campo Telefone */}
+                    <CustomProfileInput
+                        label="Telefone"
+                        iconName="phone"
+                        value={phone}
+                        onChangeText={setPhone}
+                        editable={isEditing}
+                        keyboardType="phone-pad"
+                    />
+                    
                     {/* Campo Email */}
                     <CustomProfileInput
                         label="Email"
@@ -170,19 +232,16 @@ export default function ProfileScreen({ navigation }) {
                         autoCapitalize="none"
                     />
 
-                    {/* Campo Telefone */}
-                    <CustomProfileInput
-                        label="Telefone"
-                        iconName="phone"
-                        value={phone}
-                        onChangeText={setPhone}
-                        editable={isEditing}
-                        keyboardType="phone-pad"
+                    {/* --- NOVO CAMPO: Tipo de Usuário (Doador/Recebedor) --- */}
+                    <UserTypeSelector
+                        userType={userType}
+                        setUserType={setUserType}
+                        isEditing={isEditing}
                     />
-
-                    {/* Campo Endereço */}
+                    
+                    {/* Campo Endereço Principal (mantido para rua/número) */}
                     <CustomProfileInput
-                        label="Endereço Principal"
+                        label="Endereço Principal (Rua, Número, Bairro)"
                         iconName="map-pin"
                         value={address}
                         onChangeText={setAddress}
@@ -190,6 +249,42 @@ export default function ProfileScreen({ navigation }) {
                         multiline
                         style={profileStyles.multilineInput} // Estilo para multiline
                     />
+                    
+                    {/* --- NOVO CAMPO: CEP --- */}
+                    <CustomProfileInput
+                        label="CEP"
+                        iconName="map"
+                        value={cep}
+                        onChangeText={setCep}
+                        editable={isEditing}
+                        keyboardType="numeric"
+                        maxLength={9}
+                    />
+
+                    {/* --- NOVO CAMPO: Data de Nascimento --- */}
+                    <CustomProfileInput
+                        label="Data de Nascimento"
+                        iconName="calendar"
+                        value={birthDate}
+                        onChangeText={setBirthDate}
+                        editable={isEditing}
+                        keyboardType="numeric"
+                        placeholder="dd/mm/aaaa"
+                        maxLength={10}
+                    />
+
+                    {/* --- NOVO CAMPO: CPF --- */}
+                    <CustomProfileInput
+                        label="CPF"
+                        iconName="lock"
+                        value={cpf}
+                        onChangeText={setCpf}
+                        editable={isEditing}
+                        keyboardType="numeric"
+                        maxLength={14}
+                    />
+
+                    
                 </View>
                 
                 {/* Botão de Logout com estilo do botão do Login (vermelho) */}
@@ -203,7 +298,7 @@ export default function ProfileScreen({ navigation }) {
                 </TouchableOpacity>
 
             </ScrollView> 
-        </SafeAreaView>
+        </SafeAreaView>  
     );
 }
 
@@ -327,6 +422,43 @@ const profileStyles = StyleSheet.create({
         textAlignVertical: 'top', // Garante que o texto multiline comece no topo
         paddingTop: 10, 
         paddingBottom: 10,
+    },
+
+    // --- User Type Selector Styles ---
+    userTypeContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        borderRadius: 10,
+        overflow: 'hidden',
+        borderWidth: 1.5,
+        borderColor: '#E0E0E0',
+        shadowColor: SHADOW_COLOR,
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        elevation: 3,
+        backgroundColor: CARD_BG,
+    },
+    typeOption: {
+        flex: 1,
+        paddingVertical: 15,
+        alignItems: 'center',
+        backgroundColor: CARD_BG,
+    },
+    typeOptionActive: {
+        backgroundColor: PRIMARY_BLUE,
+    },
+    typeOptionInactive: {
+        // Estilo de fundo para o modo de não edição (sem efeito de cor primária na seleção)
+        backgroundColor: LIGHT_BG, 
+    },
+    typeText: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: PRIMARY_BLUE,
+    },
+    typeTextActive: {
+        color: CARD_BG,
     },
 
     // --- Botão de Logout (Adaptado do estilo do botão principal de Login) ---
