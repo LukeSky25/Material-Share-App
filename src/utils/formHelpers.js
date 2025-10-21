@@ -1,5 +1,5 @@
 import { isEmail } from "validator";
-import * as cnpj from "cnpj";
+import { validate as validarCnpj } from "cnpj";
 import validarCpf from "validar-cpf";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -92,7 +92,7 @@ export const validateSignUpForm = async (formData) => {
 
   let isDocValid = false;
   if (cleanedDoc.length === 11) isDocValid = validarCpf(cleanedDoc);
-  else if (cleanedDoc.length === 14) isDocValid = cnpj.isValid(cleanedDoc);
+  else if (cleanedDoc.length === 14) isDocValid = validarCnpj(cleanedDoc);
   if (!isDocValid) return "O CPF ou CNPJ informado é inválido.";
 
   if (!isEmail(email)) return "O e-mail é inválido.";
